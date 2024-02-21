@@ -10,7 +10,7 @@ struct CXMLWriter::SImplementation {
     std::shared_ptr<CDataSink> DDataSink;
     std::shared_ptr<CDataSource> DDataSource;
     XML_Parser DXMLParser;
-    using EntityQueue = std::queue<SXMLEntity>; // Define the queue type using using directive
+    using EntityQueue = std::queue<SXMLEntity>;
     EntityQueue DEntityQueue;
 
     // Start element handler function
@@ -86,92 +86,55 @@ CXMLWriter::~CXMLWriter() = default;
 
 // Flush function
 bool CXMLWriter::Flush() {
-    // No need to flush if the data sink is not open
+
     if (!DImplementation->DDataSink) {
         return false;
     }
-    // Retrieve any remaining data from the XML writer using the stored data source
-    std::vector<char> remainingDataBuffer(256); // Assuming a buffer size of 1024 bytes
+
+    std::vector<char> remainingDataBuffer(256); 
 
     while (DImplementation->DDataSource && !DImplementation->DDataSource->End()) {
         if (!DImplementation->DDataSource->Read(remainingDataBuffer, remainingDataBuffer.size())) {
-            // Error reading from data source
             return false;
         }
-        // Write the read data to the data sink
         if (!DImplementation->DDataSink->Write(remainingDataBuffer)) {
-            // Error writing to data sink
             return false;
         }
     }
-
-    // Return true to indicate success
     return true;
 }
 
 // Write entity function
 bool CXMLWriter::WriteEntity(const SXMLEntity &entity) {
-    // Check if data sink is initialized
+
     if (!DImplementation->DDataSink) {
-        return false; // Data sink is not initialized
+        return false; 
     }
 
-    // Initialize XML parser
-    XML_Parser parser = XML_ParserCreate(NULL);
-    if (!parser) {
-        return false; // Failed to create XML parser
-    }
-
-    // Set character data handler
-    XML_SetCharacterDataHandler(parser, SImplementation::CharacterDataHandlerCallback);
-
-    // Start element tag
+    std::string xmlString;
     if (entity.DType == SXMLEntity::EType::StartElement) {
-        std::string startTag = "<" + entity.DNameData;
+        xmlString = "<" + entity.DNameData;
         for (const auto &attr : entity.DAttributes) {
-            startTag += " " + attr.first + "=\"" + attr.second + "\"";
+            xmlString += " " + attr.first + "=\"" + attr.second + "\"";
         }
-        startTag += ">";
-        // Parse start element tag
-        if (!XML_Parse(parser, startTag.c_str(), startTag.size(), 0)) {
-            XML_ParserFree(parser);
-            return false; // Failed to parse start element tag
-        }
-    }
-    // End element tag
-    else if (entity.DType == SXMLEntity::EType::EndElement) {
-        std::string endTag = "</" + entity.DNameData + ">";
-        // Parse end element tag
-        if (!XML_Parse(parser, endTag.c_str(), endTag.size(), 1)) {
-            XML_ParserFree(parser);
-            return false; // Failed to parse end element tag
-        }
-    }
-    // Complete element tag
-    else if (entity.DType == SXMLEntity::EType::CompleteElement) {
-        std::string completeTag = "<" + entity.DNameData;
+        xmlString += ">";
+    } else if (entity.DType == SXMLEntity::EType::EndElement) {
+        xmlString = "</" + entity.DNameData + ">";
+    } else if (entity.DType == SXMLEntity::EType::CompleteElement) {
+        xmlString = "<" + entity.DNameData;
         for (const auto &attr : entity.DAttributes) {
-            completeTag += " " + attr.first + "=\"" + attr.second + "\"";
+            xmlString += " " + attr.first + "=\"" + attr.second + "\"";
         }
-        completeTag += "/>";
-        // Parse complete element tag
-        if (!XML_Parse(parser, completeTag.c_str(), completeTag.size(), 1)) {
-            XML_ParserFree(parser);
-            return false; // Failed to parse complete element tag
-        }
-    }
-    // Character data
-    else if (entity.DType == SXMLEntity::EType::CharData) {
-        // Parse character data
-        if (!XML_Parse(parser, entity.DNameData.c_str(), entity.DNameData.size(), 0)) {
-            XML_ParserFree(parser);
-            return false; // Failed to parse character data
-        }
+        xmlString += "/>";
+    } else if (entity.DType == SXMLEntity::EType::CharData) {
+        xmlString = entity.DNameData;
     }
 
-    // Free XML parser
-    XML_ParserFree(parser);
+    if (!DImplementation->DDataSink->Write(std::vector<char>(xmlString.begin(), xmlString.end()))) {
+        return false; 
+    }
 
-    // Return true to indicate success
+
     return true;
 }
+

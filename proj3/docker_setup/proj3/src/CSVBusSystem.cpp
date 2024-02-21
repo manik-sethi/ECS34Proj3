@@ -1,60 +1,121 @@
 #include <OpenStreetMap.h>
 #include <BusSystem.h>
 #include <CSVBusSystem.h>
-#include <DataSink.h>
-#include <DataSource.h>
 #include <DSVReader.h>
 #include <DSVWriter.h>
 #include <StreetMap.h>
 #include <StringDataSink.h>
 #include <StringDataSource.h>
 #include <StringUtils.h>
-#include <XMLEntity.h>
-#include <XMLReader.h>
-#include <XMLWriter.h>
 #include <stdlib.h>
+#include <unordered_map>
+#include <iostream>
 
-// CSVBusSystem File
+// Structure to hold implementation details
+struct CCSVBusSystem::SImplementation {
+    std::vector<std::shared_ptr<CBusSystem::SStop>> Stops; 
+    std::unordered_map<CBusSystem::TStopID, std::shared_ptr<CBusSystem::SStop>> StopsById; 
+    std::vector<std::shared_ptr<CBusSystem::SRoute>> Routes;
+    std::unordered_map<CBusSystem::TStopID, std::shared_ptr<CBusSystem::SRoute>> RoutesById; 
+    
+    // Struct representing a stop
+    struct SStop : public CBusSystem::SStop {
+        CBusSystem::TStopID id; 
+        CStreetMap::TNodeID nodeID; 
 
-class CCSVBusSystem
+        // Constructor
+        SStop(CBusSystem::TStopID id, CStreetMap::TNodeID nodeID) : id(id), nodeID(nodeID) {}
 
-{
-    // CCSVBusSystem member functions
-    // Constructor for the CSV Bus System
-    CCSVBusSystem(std::shared_ptr< CDSVReader > stopsrc, std::shared_ptr<
-    CDSVReader > routesrc);
-    // Destructor for the CSV Bus System
-    ~CCSVBusSystem();
-    // Returns the number of stops in the system
-    std::size_t StopCount() const noexcept override;
-    // Returns the number of routes in the system
-    std::size_t RouteCount() const noexcept override;
-    // Returns the SStop specified by the index, nullptr is returned if index is
-    // greater than equal to StopCount()
-    std::shared_ptr<SStop> StopByIndex(std::size_t index) const noexcept
-    override;
-    // Returns the SStop specified by the stop id, nullptr is returned if id is
-    // not in the stops
-    std::shared_ptr<SStop> StopByID(TStopID id) const noexcept override;
-    // Returns the SRoute specified by the index, nullptr is returned if index is
-    // greater than equal to RouteCount()
-    std::shared_ptr<SRoute> RouteByIndex(std::size_t index) const noexcept
-    override;
-    // Returns the SRoute specified by the name, nullptr is returned if name is
-    // not in the routes
-    std::shared_ptr<SRoute> RouteByName(const std::string &name) const noexcept
-    override;
-    // Bus System Stop member functions
-    // Returns the stop id of the stop
-    TStopID ID() const noexcept override;
-    // Returns the node id of the bus stop
-    CStreetMap::TNodeID NodeID() const noexcept override;
-    // Bus System Route member functions
-    // Returns the name of the route
-    std::string Name() const noexcept override;
-    // Returns the number of stops on the route
-    std::size_t StopCount() const noexcept override;
-    // Returns the stop id specified by the index, returns InvalidStopID if index
-    // is greater than or equal to StopCount()
-    TStopID GetStopID(std::size_t index) const noexcept override;
+        // Methods to retrieve stop information
+        CBusSystem::TStopID ID() const noexcept override { return id; }
+        CStreetMap::TNodeID NodeID() const noexcept override { return nodeID; }
+    };
+
+    // Struct representing a route
+    struct SRoute : public CBusSystem::SRoute {
+        std::string name; 
+        std::vector<CBusSystem::TStopID> stopIDs; 
+
+        // Constructor
+        SRoute(const std::string& name, const std::vector<CBusSystem::TStopID>& stopIDs) : name(name), stopIDs(stopIDs) {}
+
+        // Methods to retrieve route information
+        std::string Name() const noexcept override { return name; }
+        std::size_t StopCount() const noexcept override { return stopIDs.size(); }
+        CBusSystem::TStopID GetStopID(std::size_t index) const noexcept override {
+            if (index < stopIDs.size()) return stopIDs[index];
+            else return CBusSystem::InvalidStopID;
+        }
+    };
 };
+
+// Destructor for CCSVBusSystem
+CCSVBusSystem::~CCSVBusSystem() {}
+
+// Method to get the count of stops
+std::size_t CCSVBusSystem::StopCount() const noexcept {
+    return DImplementation->Stops.size();
+}
+
+// Method to get the count of routes
+std::size_t CCSVBusSystem::RouteCount() const noexcept {
+    return DImplementation->Routes.size();
+}
+
+// Method to get a stop by its index
+std::shared_ptr<CBusSystem::SStop> CCSVBusSystem::StopByIndex(std::size_t index) const noexcept {
+    if (index < DImplementation->Stops.size()) {
+        return DImplementation->Stops[index]; 
+    } else {
+        return nullptr;
+    }
+}
+
+// Method to get a stop by its ID
+std::shared_ptr<CBusSystem::SStop> CCSVBusSystem::StopByID(CBusSystem::TStopID id) const noexcept {
+    auto it = DImplementation->StopsById.find(id);
+    if (it != DImplementation->StopsById.end()) {
+        return it->second;
+    } else {
+        return nullptr;
+    }
+}
+
+// Method to get a route by its index
+std::shared_ptr<CBusSystem::SRoute> CCSVBusSystem::RouteByIndex(std::size_t index) const noexcept {
+    if (index < DImplementation->Routes.size()) {
+        return DImplementation->Routes[index]; 
+    } else {
+        return nullptr; 
+    }
+}
+
+// Method to get a route by its name
+std::shared_ptr<CBusSystem::SRoute> CCSVBusSystem::RouteByName(const std::string& name) const noexcept {
+    std::string nameLower = StringUtils::Lower(name);
+    for (const auto& route : DImplementation->Routes) {
+        if (StringUtils::Lower(route->Name()) == nameLower) {}
+    }
+    return nullptr; 
+}
+
+// Constructor for CCSVBusSystem
+CCSVBusSystem::CCSVBusSystem(std::shared_ptr<CDSVReader> stopsrc, std::shared_ptr<CDSVReader> routesrc) : DImplementation(std::make_unique<SImplementation>()) {
+    std::vector<std::string> row;
+
+    while (!stopsrc->End()) {
+        if (stopsrc->ReadRow(row)) {
+            try {
+                TStopID id = std::stoull(row[0]);
+                CStreetMap::TNodeID nodeID = std::stoull(row[1]); 
+                auto stop = std::make_shared<SImplementation::SStop>(id, nodeID); 
+                DImplementation->Stops.push_back(stop);
+                DImplementation->StopsById[id] = stop;
+            } catch (const std::invalid_argument& e) {
+                std::cerr << "Invalid argument error: " << e.what() << std::endl;
+            } catch (const std::out_of_range& e) {
+                std::cerr << "Out of range error: " << e.what() << std::endl;
+            }
+        }
+    }
+}

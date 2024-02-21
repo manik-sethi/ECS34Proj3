@@ -1,4 +1,4 @@
-# Project 2 README
+# Project 3 README
 
 Student: Manik Sethi (920896983)
 Student: Saketh Kotapati (919454378)
@@ -17,112 +17,111 @@ Due to some issues with docker crashing on Manik's mac repeatedly, we have to in
 I used ChatGPT for Prompt 1 and Prompt 2
 
 ### Prompt 1
-I am writing an XML parser that has two file components, an XML reader and XML writer in C++. I am using the google test library to write testcases. Please wait a moment until I provide my current test file.
-```cpp
-#include "XMLReader.h"
-#include "XMLWriter.h"
-#include "XMLEntity.h"
-#include "DataSink.h"
-#include "DataSource.h"
-#include <gtest/gtest.h>
-
-
-// Tests go here:
-// Tests for CXMLReader
-TEST(CXMLReaderTest, Constructor) {
-    auto dataSource = std::make_shared<CDataSink>();
-    CXMLReader xmlReader(dataSource);
-
-    // Add assertions if needed
-    ASSERT_TRUE(xmlReader.End());
-}
-
-TEST(CXMLReaderTest, ReadEntity) {
-    auto dataSource = std::make_shared<CDataSource>();
-    CXMLReader xmlReader(dataSource);
-
-    SXMLEntity entity;
-    bool result = xmlReader.ReadEntity(entity);
-
-    // Add assertions based on your expectations
-    ASSERT_TRUE(result);
-    // ASSERT_EQ(entity.DType, ...);
-    // ASSERT_EQ(entity.DNameData, ...);
-    // ASSERT_EQ(entity.DAttributes.size(), ...);
-}
-
-// Tests for CXMLWriter
-TEST(CXMLWriterTest, Constructor) {
-    auto dataSink = std::make_shared<CDataSink>();
-    CXMLWriter xmlWriter(dataSink);
-
-    // Add assertions if needed
-    ASSERT_FALSE(xmlWriter.Flush());  // Assuming Flush returns false in your current implementation
-}
-
-TEST(CXMLWriterTest, WriteEntity) {
-    auto dataSink = std::make_shared<CDataSink>();
-    CXMLWriter xmlWriter(dataSink);
-
-    SXMLEntity entity;
-    // Set up the entity with necessary data
-
-    bool result = xmlWriter.WriteEntity(entity);
-
-    // Add assertions based on your expectations
-    ASSERT_FALSE(result);  // Assuming WriteEntity returns false in your current implementation
-}
-
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
-}
+Hey, I am implementing a DSV parser for bus stops, however I keep getting this error with my makefile. Can you make sense of this message
 ```
+g++ -o ./bin/testcsvbussystem -std=c++17 -I./include  ./obj/CSVBusSystem.o ./obj/CSVBusSystemTest.o
+Undefined symbols for architecture arm64:
+  "CDSVReader::ReadRow(std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > >&)", referenced from:
+      CCSVBusSystem::CCSVBusSystem(std::__1::shared_ptr<CDSVReader>, std::__1::shared_ptr<CDSVReader>) in CSVBusSystem.o
+  "CDSVReader::CDSVReader(std::__1::shared_ptr<CDataSource>, char)", referenced from:
+      std::__1::__shared_ptr_emplace<CDSVReader, std::__1::allocator<CDSVReader> >::__shared_ptr_emplace<std::__1::shared_ptr<CStringDataSource>&, char>(std::__1::allocator<CDSVReader>, std::__1::shared_ptr<CStringDataSource>&, char&&) in CSVBusSystemTest.o
+  "CDSVReader::~CDSVReader()", referenced from:
+      std::__1::__shared_ptr_emplace<CDSVReader, std::__1::allocator<CDSVReader> >::__on_zero_shared() in CSVBusSystemTest.o
+  "StringUtils::Lower(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)", referenced from:
+      CCSVBusSystem::RouteByName(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&) const in CSVBusSystem.o
+  "CCSVBusSystem::~CCSVBusSystem()", referenced from:
+      CSVBusSystem_SimpleExampleTest_Test::TestBody() in CSVBusSystemTest.o
+  "CStringDataSource::CStringDataSource(std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&)", referenced from:
+      std::__1::__shared_ptr_emplace<CStringDataSource, std::__1::allocator<CStringDataSource> >::__shared_ptr_emplace<char const (&) [23]>(std::__1::allocator<CStringDataSource>, char const (&) [23]) in CSVBusSystemTest.o
+      std::__1::__shared_ptr_emplace<CStringDataSource, std::__1::allocator<CStringDataSource> >::__shared_ptr_emplace<char const (&) [14]>(std::__1::allocator<CStringDataSource>, char const (&) [14]) in CSVBusSystemTest.o
+  "testing::InitGoogleTest(int*, char**)", referenced from:
+      _main in CSVBusSystemTest.o
+  "testing::AssertionSuccess()", referenced from:
+      testing::AssertionResult testing::internal::CmpHelperEQ<unsigned long, int>(char const*, char const*, unsigned long const&, int const&) in CSVBusSystemTest.o
+      testing::AssertionResult testing::internal::CmpHelperEQ<unsigned long long, int>(char const*, char const*, unsigned long long const&, int const&) in CSVBusSystemTest.o
+  "testing::Test::SetUp()", referenced from:
+      vtable for CSVBusSystem_SimpleExampleTest_Test in CSVBusSystemTest.o
+  "testing::Test::TearDown()", referenced from:
+      vtable for CSVBusSystem_SimpleExampleTest_Test in CSVBusSystemTest.o
+  "testing::Test::Test()", referenced from:
+      CSVBusSystem_SimpleExampleTest_Test::CSVBusSystem_SimpleExampleTest_Test() in CSVBusSystemTest.o
+  "testing::Test::~Test()", referenced from:
+      CSVBusSystem_SimpleExampleTest_Test::~CSVBusSystem_SimpleExampleTest_Test() in CSVBusSystemTest.o
+  "testing::Message::Message()", referenced from:
+      CSVBusSystem_SimpleExampleTest_Test::TestBody() in CSVBusSystemTest.o
+  "testing::UnitTest::GetInstance()", referenced from:
+      RUN_ALL_TESTS() in CSVBusSystemTest.o
+  "testing::UnitTest::Run()", referenced from:
+      RUN_ALL_TESTS() in CSVBusSystemTest.o
+  "testing::internal::AssertHelper::AssertHelper(testing::TestPartResult::Type, char const*, int, char const*)", referenced from:
+      CSVBusSystem_SimpleExampleTest_Test::TestBody() in CSVBusSystemTest.o
+  "testing::internal::AssertHelper::~AssertHelper()", referenced from:
+      CSVBusSystem_SimpleExampleTest_Test::TestBody() in CSVBusSystemTest.o
+  "testing::internal::GetTestTypeId()", referenced from:
+      ___cxx_global_var_init in CSVBusSystemTest.o
+  "testing::internal::MakeAndRegisterTestInfo(char const*, char const*, char const*, char const*, testing::internal::CodeLocation, void const*, void (*)(), void (*)(), testing::internal::TestFactoryBase*)", referenced from:
+      ___cxx_global_var_init in CSVBusSystemTest.o
+  "testing::internal::IsTrue(bool)", referenced from:
+      testing::internal::SuiteApiResolver<testing::Test>::GetSetUpCaseOrSuite(char const*, int) in CSVBusSystemTest.o
+      testing::internal::SuiteApiResolver<testing::Test>::GetTearDownCaseOrSuite(char const*, int) in CSVBusSystemTest.o
+  "testing::internal::GTestLog::GTestLog(testing::internal::GTestLogSeverity, char const*, int)", referenced from:
+      testing::internal::SuiteApiResolver<testing::Test>::GetSetUpCaseOrSuite(char const*, int) in CSVBusSystemTest.o
+      testing::internal::SuiteApiResolver<testing::Test>::GetTearDownCaseOrSuite(char const*, int) in CSVBusSystemTest.o
+  "testing::internal::GTestLog::~GTestLog()", referenced from:
+      testing::internal::SuiteApiResolver<testing::Test>::GetSetUpCaseOrSuite(char const*, int) in CSVBusSystemTest.o
+      testing::internal::SuiteApiResolver<testing::Test>::GetTearDownCaseOrSuite(char const*, int) in CSVBusSystemTest.o
+  "testing::internal::EqFailure(char const*, char const*, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > const&, bool)", referenced from:
+      testing::AssertionResult testing::internal::CmpHelperEQFailure<unsigned long, int>(char const*, char const*, unsigned long const&, int const&) in CSVBusSystemTest.o
+      testing::AssertionResult testing::internal::CmpHelperEQFailure<unsigned long long, int>(char const*, char const*, unsigned long long const&, int const&) in CSVBusSystemTest.o
+  "CDSVReader::End() const", referenced from:
+      CCSVBusSystem::CCSVBusSystem(std::__1::shared_ptr<CDSVReader>, std::__1::shared_ptr<CDSVReader>) in CSVBusSystem.o
+  "testing::internal::AssertHelper::operator=(testing::Message const&) const", referenced from:
+      CSVBusSystem_SimpleExampleTest_Test::TestBody() in CSVBusSystemTest.o
+  "typeinfo for testing::Test", referenced from:
+      typeinfo for CSVBusSystem_SimpleExampleTest_Test in CSVBusSystemTest.o
+  "vtable for CCSVBusSystem", referenced from:
+      CCSVBusSystem::CCSVBusSystem(std::__1::shared_ptr<CDSVReader>, std::__1::shared_ptr<CDSVReader>) in CSVBusSystem.o
+  NOTE: a missing vtable usually means the first non-inline virtual member function has no definition.
+ld: symbol(s) not found for architecture arm64
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+make: *** [bin/testcsvbussystem] Error 1
+pardan@campus-044-159 proj3 % 
+```
+
 ### Response 1
-Thank you for providing your updated test file. It looks like you have set up test cases for both the XML reader and XML writer components. Here are a few suggestions and improvements you might consider:
+The error you're encountering now is related to unresolved symbols during linking. These symbols are typically functions or variables declared in your source files but not defined. Here's a breakdown of the issues:
 
-Mock Objects: Since your tests involve interactions with CDataSource and CDataSink, which are presumably external dependencies, consider using mock objects to isolate the unit under test. This allows you to control the behavior of the dependencies and focus solely on testing the functionality of the XML reader and writer.
+Undefined symbols for architecture arm64: This error indicates that the linker couldn't find the definitions for certain symbols. These symbols include functions like CDSVReader::ReadRow, CDSVReader::CDSVReader, CDSVReader::~CDSVReader, CStringDataSource::CStringDataSource, and StringUtils::Lower, among others.
 
-Assertions: While your current test cases have assertions to verify basic functionality, consider adding more detailed assertions to thoroughly test the behavior of your XML reader and writer. For example, you could verify the content of the entities read/written, the handling of edge cases, etc.
+No matching constructor for initialization of 'CDSVReader': This error suggests that there's no constructor defined for CDSVReader that matches the arguments provided during its initialization.
 
-Edge Cases: Make sure to test edge cases such as empty XML files, XML files with malformed syntax, large XML files, etc. This ensures that your XML parser behaves correctly under various conditions.
+Note: a missing vtable usually means the first non-inline virtual member function has no definition: This note indicates that the virtual member functions of a class (CCSVBusSystem, in this case) might not have been defined.
 
-Parameterized Tests: If applicable, consider using parameterized tests to test your XML reader and writer with different inputs or configurations. This can help increase test coverage and identify potential issues with different scenarios.
+To resolve these issues:
 
-Error Handling: Test how your XML reader and writer handle errors, such as invalid XML input or I/O errors when reading/writing to the data source/sink.
+Make sure that all member functions declared in your classes (CDSVReader, CStringDataSource, CCSVBusSystem, etc.) are defined. This includes constructors, destructors, and any other member functions.
 
-Memory Management: Ensure proper memory management in your tests, especially when dealing with shared pointers. Make sure objects are destructed appropriately and there are no memory leaks.
+Ensure that the necessary source files containing the implementations of these classes are included in your build process.
 
-Test Naming: Consider using more descriptive names for your test cases to clearly indicate what behavior or functionality they are testing.
+Check for any typos or mismatches between function declarations and definitions.
 
-Documentation: Add comments or documentation to your test cases to explain the purpose of each test and any assumptions being made.
+If you're using any external libraries, ensure that you're linking against them properly.
 
-Applying these suggestions can help you improve the robustness and effectiveness of your test suite for the XML parser. If you need further assistance with any specific aspect of your tests or implementation, feel free to ask!
+By addressing these issues, you should be able to resolve the linking errors and successfully compile your program. If you need further assistance, feel free to provide additional details or code snippets.
 
 ### Changes 1
-We utilized this prompt to help with troubleshooting and suggesting improvements for the xmltest file. Overall, we ended up keeping these suggestions in mind to come up with this testfile:
+This prompt helped us discover we were not including everything we needed to in the link file. Because of this, we realized we 
+were missing $(OBJ_DIR)/StringDataSource.o $(OBJ_DIR)/DSVReader.o and $(OBJ_DIR)/StringDataSource.o
 ```cpp
 ...
-//Previous Tests
-TEST(CXMLReaderTest, ReadEntity) {
-    auto dataSource = std::make_shared<CStringDataSource>("test.xml");
-    CXMLReader xmlReader(dataSource);
+## BusSystem
+$(BIN_DIR)/testcsvbs: $(OBJ_DIR)/CSVBusSystem.o $(OBJ_DIR)/CSVBusSystemTest.o $(OBJ_DIR)/StringDataSource.o $(OBJ_DIR)/DSVReader.o $(OBJ_DIR)/StringUtils.o
+	$(CXX) -o $(BIN_DIR)/testcsvbs $(CXXFLAGS) $(OBJ_DIR)/CSVBusSystem.o $(OBJ_DIR)/CSVBusSystemTest.o $(OBJ_DIR)/StringDataSource.o $(OBJ_DIR)/DSVReader.o $(OBJ_DIR)/StringUtils.o $(LDFLAGS)
 
-    SXMLEntity entity;
-    bool result = xmlReader.ReadEntity(entity);
+$(OBJ_DIR)/CSVBusSystem.o: $(SRC_DIR)/CSVBusSystem.cpp $(INC_DIR)/CSVBusSystem.h
+	$(CXX) -o $(OBJ_DIR)/CSVBusSystem.o -c $(CXXFLAGS) $(SRC_DIR)/CSVBusSystem.cpp
 
-    auto InputStream = std::make_shared<CStringDataSource>("<example attr=\"Hello World\"></example>");
-    CXMLReader Reader(InputStream);
-    SXMLEntity E;
-
-    EXPECT_TRUE(Reader.ReadEntity(E));
-    EXPECT_EQ(E.DType, SXMLEntity::EType::StartElement);
-    EXPECT_EQ(E.AttributeValue("attr"), "Hello World");
-
-    EXPECT_TRUE(Reader.ReadEntity(E));
-    EXPECT_EQ(E.DType, SXMLEntity::EType::EndElement);
-}
-//Proceeding Tests
-...
+$(OBJ_DIR)/CSVBusSystemTest.o: $(TEST_SRC_DIR)/CSVBusSystemTest.cpp
+	$(CXX) -o $(OBJ_DIR)/CSVBusSystemTest.o -c $(CXXFLAGS) $(TEST_SRC_DIR)/CSVBusSystemTest.cpp
 ```
 

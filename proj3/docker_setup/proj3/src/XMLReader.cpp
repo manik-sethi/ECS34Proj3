@@ -4,11 +4,13 @@
 #include <queue>
 #include <iostream>
 
+// Structure to hold implementation details
 struct CXMLReader::SImplementation {
     std::shared_ptr<CDataSource> DDataSource;
     XML_Parser DXMLParser;
     std::queue<SXMLEntity> DEntityQueue;
 
+    // Constructor
     SImplementation(std::shared_ptr<CDataSource> src) : DDataSource(src) {
         DXMLParser = XML_ParserCreate(NULL);
         XML_SetStartElementHandler(DXMLParser, StartElementHandlerCallback);
@@ -17,10 +19,12 @@ struct CXMLReader::SImplementation {
         XML_SetUserData(DXMLParser, this);
     }
 
+    // Destructor
     ~SImplementation() {
         XML_ParserFree(DXMLParser);
     }
 
+    // Handler for XML start elements
     void StartElementHandler(const std::string &name, const std::vector<std::string> &attrs) {
         SXMLEntity TempEntity;
         TempEntity.DNameData = name;
@@ -33,6 +37,7 @@ struct CXMLReader::SImplementation {
         DEntityQueue.push(TempEntity);
     }
 
+    // Handler for XML end elements
     void EndElementHandler(const std::string &name) {
         SXMLEntity TempEntity;
         TempEntity.DNameData = name;
@@ -40,6 +45,7 @@ struct CXMLReader::SImplementation {
         DEntityQueue.push(TempEntity);
     }
 
+    // Handler for XML character data
     void CharacterDataHandler(const std::string &cdata, bool skipcdata) {
 		if (!skipcdata) {
 			SXMLEntity TempEntity;
@@ -49,6 +55,7 @@ struct CXMLReader::SImplementation {
 		}
 	}
 
+    // Static callback for XML start element handler
     static void StartElementHandlerCallback(void *context, const XML_Char *name, const XML_Char **atts) {
         SImplementation *ReaderObject = static_cast<SImplementation *>(context);
         std::vector<std::string> Attributes;
@@ -60,23 +67,28 @@ struct CXMLReader::SImplementation {
         ReaderObject->StartElementHandler(name, Attributes);
     };
 
+    // Static callback for XML end element handler
     static void EndElementHandlerCallback(void *context, const XML_Char *name) {
         SImplementation *ReaderObject = static_cast<SImplementation *>(context);
         ReaderObject->EndElementHandler(name);
     };
 
+    // Static callback for XML character data handler
     static void XMLCALL CharacterDataHandlerCallback(void *context, const XML_Char *s, int len) {
         SImplementation *ReaderObject = static_cast<SImplementation *>(context);
         ReaderObject->CharacterDataHandler(std::string(s,len), false);
     }
 
+    // Check if end of data source is reached
     bool End() const {
         return DEntityQueue.empty();
     }
 
+    // Read XML entity from data source
     bool ReadEntity(SXMLEntity &entity, bool skipcdata);
 };
 
+// Read XML entity from data source
 bool CXMLReader::SImplementation::ReadEntity(SXMLEntity &entity, bool skipcdata) {
     std::vector<char> DataBuffer;
     while (DEntityQueue.empty()) {
@@ -106,17 +118,21 @@ bool CXMLReader::SImplementation::ReadEntity(SXMLEntity &entity, bool skipcdata)
     return false;
 }
 
+// Constructor
 CXMLReader::CXMLReader(std::shared_ptr<CDataSource> src) {
     DImplementation = std::make_unique<SImplementation>(src);
 }
 
+// Destructor
 CXMLReader::~CXMLReader() {
 }
 
+// Check if end of data source is reached
 bool CXMLReader::End() const {
     return DImplementation->End();
 }
 
+// Read XML entity from data source
 bool CXMLReader::ReadEntity(SXMLEntity &entity, bool skipcdata) {
     return DImplementation->ReadEntity(entity, skipcdata);
 }

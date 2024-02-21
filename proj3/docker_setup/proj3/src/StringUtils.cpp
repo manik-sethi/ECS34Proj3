@@ -2,11 +2,13 @@
 #include <string>
 #include <cctype>
 #include <vector>
+
 namespace StringUtils{
 
-std::string Slice(const std::string &str, ssize_t start, ssize_t end) noexcept{ //done
+// Extracts a slice from a string
+std::string Slice(const std::string &str, ssize_t start, ssize_t end) noexcept{
 
-    //Edge Cases
+    // Edge Cases
     if (start < 0 || end < 0 || start > end || start >= str.size() || end > str.size()) {
         return "";
     }
@@ -14,7 +16,8 @@ std::string Slice(const std::string &str, ssize_t start, ssize_t end) noexcept{ 
     return result;
 }
 
-std::string Capitalize(const std::string &str) noexcept{ //done
+// Capitalizes the first character of a string
+std::string Capitalize(const std::string &str) noexcept{
 
     if (str.empty()) {
         return "";
@@ -25,7 +28,8 @@ std::string Capitalize(const std::string &str) noexcept{ //done
     return result;
 }
 
-std::string Upper(const std::string &str) noexcept{ //done
+// Converts the string to uppercase
+std::string Upper(const std::string &str) noexcept{
 
     if (str.empty()) {
         return "";
@@ -38,7 +42,8 @@ std::string Upper(const std::string &str) noexcept{ //done
     return result;
 }
 
-std::string Lower(const std::string &str) noexcept{ //done
+// Converts the string to lowercase
+std::string Lower(const std::string &str) noexcept{
     if (str.empty()) {
         return "";
     }
@@ -50,7 +55,8 @@ std::string Lower(const std::string &str) noexcept{ //done
     return result;
 }
 
-std::string LStrip(const std::string &str) noexcept{ //done
+// Removes leading whitespace from the string
+std::string LStrip(const std::string &str) noexcept{
     if (str.empty()) {
         return "";
     }
@@ -63,7 +69,8 @@ std::string LStrip(const std::string &str) noexcept{ //done
     return str.substr(i);
 }
 
-std::string RStrip(const std::string &str) noexcept{ //done
+// Removes trailing whitespace from the string
+std::string RStrip(const std::string &str) noexcept{
     if (str.empty()) {
         return "";
     }
@@ -76,7 +83,8 @@ std::string RStrip(const std::string &str) noexcept{ //done
     return str.substr(0,i+1);
 }
 
-std::string Strip(const std::string &str) noexcept{ //done
+// Removes leading and trailing whitespace from the string
+std::string Strip(const std::string &str) noexcept{
     if (str.empty()) {
         return "";
     }
@@ -91,10 +99,10 @@ std::string Strip(const std::string &str) noexcept{ //done
     return retval;
 }
 
-std::string Center(const std::string &str, int width, char fill) noexcept{ //done
+// Centers the string within a given width
+std::string Center(const std::string &str, int width, char fill) noexcept{
 
     if (width < str.size()) {return str;}
-
 
     int fillers = width - str.size();
     int leftFill;
@@ -108,7 +116,8 @@ std::string Center(const std::string &str, int width, char fill) noexcept{ //don
     return std::string(leftFill, fill) + str + std::string(rightFill,fill);
 }
 
-std::string LJust(const std::string &str, int width, char fill) noexcept{ //done
+// Left-justifies the string within a given width
+std::string LJust(const std::string &str, int width, char fill) noexcept{
     if (width < str.size()) {
         return str;
     }
@@ -117,7 +126,8 @@ std::string LJust(const std::string &str, int width, char fill) noexcept{ //done
 
 }
 
-std::string RJust(const std::string &str, int width, char fill) noexcept{ //done
+// Right-justifies the string within a given width
+std::string RJust(const std::string &str, int width, char fill) noexcept{
     if (width < str.size()) {
         return str;
     }
@@ -125,7 +135,8 @@ std::string RJust(const std::string &str, int width, char fill) noexcept{ //done
     return std::string(leftFill,fill) + str;
 }
 
-std::string Replace(const std::string &str, const std::string &old, const std::string &rep) noexcept{ //done
+// Replaces occurrences of a substring within the string
+std::string Replace(const std::string &str, const std::string &old, const std::string &rep) noexcept{
     if (str.empty()) {
         return "";
     }
@@ -141,7 +152,8 @@ std::string Replace(const std::string &str, const std::string &old, const std::s
 
 }
 
-std::vector< std::string > Split(const std::string &str, const std::string &splt) noexcept{ //done
+// Splits the string into a vector of substrings based on a delimiter
+std::vector< std::string > Split(const std::string &str, const std::string &splt) noexcept{
     if (str.empty()) {
         return {""};
     }
@@ -163,8 +175,8 @@ std::vector< std::string > Split(const std::string &str, const std::string &splt
     return list;
 }
 
-std::string Join(const std::string &str, const std::vector< std::string > &vect) noexcept{ //done
-
+// Joins the elements of a vector into a single string using a delimiter
+std::string Join(const std::string &str, const std::vector< std::string > &vect) noexcept{
     if (vect.empty()) {
         return "";
     }
@@ -178,7 +190,8 @@ std::string Join(const std::string &str, const std::vector< std::string > &vect)
     return retval;
 }
 
-std::string ExpandTabs(const std::string &str, int tabsize) noexcept { //done
+// Expands tabs in the string to spaces
+std::string ExpandTabs(const std::string &str, int tabsize) noexcept {
     if (str.empty()) {
         return str;
     }
@@ -207,8 +220,8 @@ std::string ExpandTabs(const std::string &str, int tabsize) noexcept { //done
     return retval;
 }
 
-
-int EditDistance(const std::string &left, const std::string &right, bool ignorecase) noexcept { //DONE!!!
+// Calculates the edit distance between two strings
+int EditDistance(const std::string &left, const std::string &right, bool ignorecase) noexcept {
     std::string l = left;
     std::string r = right;
     if (ignorecase) {
@@ -234,12 +247,10 @@ int EditDistance(const std::string &left, const std::string &right, bool ignorec
             } else {
                 cost = 1;
             }
-            //find min cost between substituion, deletion, and insertion (not in that order)
-           matrix[i][j] = std::min({matrix[i - 1][j] + 1,matrix[i][j - 1] + 1,matrix[i - 1][j - 1] + cost });
+            matrix[i][j] = std::min({matrix[i - 1][j] + 1,matrix[i][j - 1] + 1,matrix[i - 1][j - 1] + cost });
         }
     }
     return matrix[l.size()][r.size()];
 } 
 
-    
-};
+} // End of namespace StringUtils

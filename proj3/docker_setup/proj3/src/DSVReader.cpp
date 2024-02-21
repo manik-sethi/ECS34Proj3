@@ -4,67 +4,61 @@
 
 #include <sstream>
 
-// Implementation struct definition
+// Structure to hold implementation details of DSVReader
 struct CDSVReader::SImplementation {
-    std::shared_ptr<CDataSource> DDataSource;
-    char DDelimiter;
+    std::shared_ptr<CDataSource> DDataSource;  
+    char DDelimiter;  
 
+    // Constructor
     SImplementation(std::shared_ptr<CDataSource> src, char delimiter)
         : DDataSource(src), DDelimiter(delimiter) {
     }
 };
 
-// Constructor
+// Constructor for DSVReader
 CDSVReader::CDSVReader(std::shared_ptr<CDataSource> src, char delimiter) 
     : DImplementation(std::make_unique<SImplementation>(src, delimiter)) {
 }
 
-// Destructor
+// Destructor for DSVReader
 CDSVReader::~CDSVReader() {
 }
 
-// End function
+// Method to check if end of file is reached
 bool CDSVReader::End() const {
-    return DImplementation->DDataSource->End();
+    return DImplementation->DDataSource->End();  
 }
 
-// ReadRow function
+// Method to read a row from the data source
 bool CDSVReader::ReadRow(std::vector<std::string> &row) {
-    // Clear the row vector
-    row.clear();
+    row.clear();  
 
-    // Temporary storage for read characters
-    char ch;
-
-    // Temporary storage for building a field
-    std::string field;
+    char ch;  
+    std::string field;  
+    bool inQuotedField = false;  
 
     // Read characters until the end of line or end of data source
     while (!DImplementation->DDataSource->End() && DImplementation->DDataSource->Get(ch)) {
-        // Check for end of line
-        if (ch == '\n') {
-            // Add the field to the row vector
-            row.push_back(field);
-            return true; // Row read successfully
-        }
-        // Check for delimiter
-        else if (ch == DImplementation->DDelimiter) {
-            // Add the field to the row vector
-            row.push_back(field);
-            // Clear the field for the next one
-            field.clear();
-        }
-        // Normal character, add to the field
-        else {
-            field += ch;
+        if (ch == '\n') {  
+            if (inQuotedField) {
+                field += ch;  
+            } else {
+                row.push_back(field); 
+                return true;  
+            }
+        } else if (ch == DImplementation->DDelimiter && !inQuotedField) {  
+            row.push_back(field); 
+            field.clear();  
+        } else if (ch == '\"') { 
+            inQuotedField = !inQuotedField; 
+        } else {
+            field += ch; 
         }
     }
 
-    // Add the last field to the row vector if it's not empty
     if (!field.empty()) {
-        row.push_back(field);
+        row.push_back(field); 
     }
 
-    // Return true if at least one field was read, false otherwise
-    return !row.empty();
+    return !row.empty();  
 }
