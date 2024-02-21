@@ -1,114 +1,69 @@
-#include <StreetMap.h>
-#include <OpenStreetMap.h>
-#include <XMLReader.h>
-#include <XMLWriter.h>
-#include <StringDataSink.h>
-#include <StringDataSource.h>
-#include <StringUtils.h>
-#include <stdlib.h>
+#include <memory>
+#include <vector>
 #include <unordered_map>
-#include <iostream>
+#include "StreetMap.h"
+#include "OpenStreetMap.h"
+#include "XMLReader.h"
 
-// Include necessary headers
+class COpenStreetMap : public CStreetMap {
+public:
+    // Constructor
+    COpenStreetMap(std::shared_ptr<CXMLReader> src);
+
+    // Destructor
+    ~COpenStreetMap() override;
+
+    // Implementation of virtual functions
+    std::size_t NodeCount() const noexcept override;
+    std::size_t WayCount() const noexcept override;
+    std::shared_ptr<CStreetMap::SNode> NodeByIndex(std::size_t index) const noexcept override;
+    std::shared_ptr<CStreetMap::SNode> NodeByID(TNodeID id) const noexcept override;
+    std::shared_ptr<CStreetMap::SWay> WayByIndex(std::size_t index) const noexcept override;
+    std::shared_ptr<CStreetMap::SWay> WayByID(TWayID id) const noexcept override;
+
+private:
+    struct SNode : public CStreetMap::SNode {
+        CStreetMap::TNodeID id;
+        CStreetMap::TLocation location;
+
+        SNode(CStreetMap::TNodeID id, CStreetMap::TLocation location) : id(id), location(location) {}
+
+        CStreetMap::TNodeID ID() const noexcept override { return id; }
+        CStreetMap::TLocation Location() const noexcept override { return location; }
+        std::size_t AttributeCount() const noexcept override { return 0; }
+        std::string GetAttributeKey(std::size_t index) const noexcept override { return ""; }
+        bool HasAttribute(const std::string &key) const noexcept override { return false; }
+        std::string GetAttribute(const std::string &key) const noexcept override { return ""; }
+    };
+
+    struct SWay : public CStreetMap::SWay {
+        CStreetMap::TWayID id;
+        std::vector<CStreetMap::TNodeID> NodeIDs;
+
+        SWay(CStreetMap::TWayID id) : id(id) {}
+
+        CStreetMap::TWayID ID() const noexcept override { return id; }
+        std::size_t NodeCount() const noexcept override { return NodeIDs.size(); }
+        CStreetMap::TNodeID GetNodeID(std::size_t index) const noexcept override {
+            return index < NodeIDs.size() ? NodeIDs[index] : CStreetMap::InvalidNodeID;
+        }
+        std::size_t AttributeCount() const noexcept override { return 0; }
+        std::string GetAttributeKey(std::size_t index) const noexcept override { return ""; }
+        bool HasAttribute(const std::string &key) const noexcept override { return false; }
+        std::string GetAttribute(const std::string &key) const noexcept override { return ""; }
+    };
+
+    struct SImplementation;
+    std::unique_ptr<SImplementation> DImplementation;
+};
 
 struct COpenStreetMap::SImplementation {
     std::vector<std::shared_ptr<CStreetMap::SNode>> Nodes;
     std::unordered_map<CStreetMap::TNodeID, std::shared_ptr<CStreetMap::SNode>> NodesById;
     std::vector<std::shared_ptr<CStreetMap::SWay>> Ways;
     std::unordered_map<CStreetMap::TWayID, std::shared_ptr<CStreetMap::SWay>> WaysById;
-
-    // Struct representing a node
-    struct SNode : public CStreetMap::SNode {
-        CStreetMap::TNodeID id;
-        CStreetMap::TLocation Location_;
-        std::unordered_map<std::string, std::string> Attributes;
-
-        // Constructor
-        SNode(CStreetMap::TNodeID id, CStreetMap::TLocation location) : id(id), Location_(location) {}
-
-        // Methods to retrieve node information
-        CStreetMap::TNodeID ID() const noexcept override { return id; }
-
-        CStreetMap::TLocation Location() const noexcept override {
-            return Location_;
-        }
-
-        std::size_t AttributeCount() const noexcept override {
-            return Attributes.size();
-        }
-
-        std::string GetAttributeKey(std::size_t index) const noexcept override {
-            if (index < Attributes.size()) {
-                auto it = std::next(Attributes.begin(), index);
-                return it->first;
-            }
-            return "";
-        }
-
-        bool HasAttribute(const std::string &key) const noexcept override {
-            return Attributes.find(key) != Attributes.end();
-        }
-
-        std::string GetAttribute(const std::string &key) const noexcept override {
-            auto it = Attributes.find(key);
-            if (it != Attributes.end()) {
-                return it->second;
-            }
-            return "";
-        }
-    };
-
-
-    // Struct representing a way
-    struct SWay : public CStreetMap::SWay {
-        CStreetMap::TWayID id;
-        std::vector<CStreetMap::TNodeID> NodeIDs;
-        std::unordered_map<std::string, std::string> Attributes;
-
-        // Constructor
-        SWay(CStreetMap::TWayID id) : id(id) {}
-
-        // Methods to retrieve way information
-        CStreetMap::TWayID ID() const noexcept override { return id; }
-        std::size_t NodeCount() const noexcept override {
-            return NodeIDs.size();
-        }
-
-        CStreetMap::TNodeID GetNodeID(std::size_t index) const noexcept override {
-            if (index < NodeIDs.size()) {
-                return NodeIDs[index];
-            }
-            return CStreetMap::InvalidNodeID;
-        }
-
-        std::size_t AttributeCount() const noexcept override {
-            return Attributes.size();
-        }
-
-        std::string GetAttributeKey(std::size_t index) const noexcept override {
-            if (index < Attributes.size()) {
-                auto it = std::next(Attributes.begin(), index);
-                return it->first;
-            }
-            return "";
-        }
-
-        bool HasAttribute(const std::string &key) const noexcept override {
-            return Attributes.find(key) != Attributes.end();
-        }
-
-        std::string GetAttribute(const std::string &key) const noexcept override {
-            auto it = Attributes.find(key);
-            if (it != Attributes.end()) {
-                return it->second;
-            }
-            return "";
-        }
-    };
 };
 
-// Constructor
-// Constructor
 COpenStreetMap::COpenStreetMap(std::shared_ptr<CXMLReader> src) : DImplementation(std::make_unique<SImplementation>()) {
     // Parse the XML data and populate Nodes and Ways
     SXMLEntity Entity;
@@ -164,11 +119,7 @@ COpenStreetMap::COpenStreetMap(std::shared_ptr<CXMLReader> src) : DImplementatio
     }
 }
 
-
-// Destructor
 COpenStreetMap::~COpenStreetMap() = default;
-
-// Implementation of virtual functions
 
 std::size_t COpenStreetMap::NodeCount() const noexcept {
     return DImplementation->Nodes.size();
@@ -179,31 +130,19 @@ std::size_t COpenStreetMap::WayCount() const noexcept {
 }
 
 std::shared_ptr<CStreetMap::SNode> COpenStreetMap::NodeByIndex(std::size_t index) const noexcept {
-    if (index < DImplementation->Nodes.size()) {
-        return DImplementation->Nodes[index];
-    }
-    return nullptr;
+    return index < DImplementation->Nodes.size() ? DImplementation->Nodes[index] : nullptr;
 }
 
-std::shared_ptr<CStreetMap::SNode> COpenStreetMap::NodeByID(TNodeID id) const noexcept {
+std::shared_ptr<CStreetMap::SNode> COpenStreetMap::NodeByID(CStreetMap::TNodeID id) const noexcept {
     auto it = DImplementation->NodesById.find(id);
-    if (it != DImplementation->NodesById.end()) {
-        return it->second;
-    }
-    return nullptr;
+    return it != DImplementation->NodesById.end() ? it->second : nullptr;
 }
 
 std::shared_ptr<CStreetMap::SWay> COpenStreetMap::WayByIndex(std::size_t index) const noexcept {
-    if (index < DImplementation->Ways.size()) {
-        return DImplementation->Ways[index];
-    }
-    return nullptr;
+    return index < DImplementation->Ways.size() ? DImplementation->Ways[index] : nullptr;
 }
 
-std::shared_ptr<CStreetMap::SWay> COpenStreetMap::WayByID(TWayID id) const noexcept {
+std::shared_ptr<CStreetMap::SWay> COpenStreetMap::WayByID(CStreetMap::TWayID id) const noexcept {
     auto it = DImplementation->WaysById.find(id);
-    if (it != DImplementation->WaysById.end()) {
-        return it->second;
-    }
-    return nullptr;
+    return it != DImplementation->WaysById.end() ? it->second : nullptr;
 }
