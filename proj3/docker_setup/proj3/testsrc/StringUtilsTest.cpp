@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 #include "StringUtils.h"
 
-TEST(StringUtilsTest, Slice){ //done
+
+// Test for Slice function of StringUtils
+TEST(StringUtilsTest, Slice){
         std::string base = "Hello";
         std::string empty = "";
 
@@ -15,7 +17,8 @@ TEST(StringUtilsTest, Slice){ //done
     
 }
 
-TEST(StringUtilsTest, Capitalize){ //done
+// Test for Capitalize function of StringUtils
+TEST(StringUtilsTest, Capitalize){ 
     std::string base = "hello";
     std::string empty = "";
 
@@ -26,21 +29,24 @@ TEST(StringUtilsTest, Capitalize){ //done
     EXPECT_EQ(StringUtils::Capitalize(empty),empty);
 }
 
-TEST(StringUtilsTest, Upper){ //done
+// Test for Upper function of StringUtils
+TEST(StringUtilsTest, Upper){
     std::string base = "hello";
     std::string empty = "";
     EXPECT_EQ(StringUtils::Upper(base),"HELLO");
     EXPECT_EQ(StringUtils::Upper(empty),empty);
 }
 
-TEST(StringUtilsTest, Lower){ //done
+// Test for Lower function of StringUtils
+TEST(StringUtilsTest, Lower){ 
     std::string base = "HELLO";
     std::string empty = "";
     EXPECT_EQ(StringUtils::Lower(base),"hello");
     EXPECT_EQ(StringUtils::Lower(empty),empty);
 }
 
-TEST(StringUtilsTest, LStrip){ //done
+// Test for LStrip function of StringUtils
+TEST(StringUtilsTest, LStrip){
     std::string base = "   hello ";
     std::string empty = "";
     EXPECT_EQ(StringUtils::LStrip(base),"hello ");
@@ -48,14 +54,16 @@ TEST(StringUtilsTest, LStrip){ //done
     
 }
 
-TEST(StringUtilsTest, RStrip){ //done
+// Test for RStrip function of StringUtils
+TEST(StringUtilsTest, RStrip){ 
     std::string base = "hello   ";
     std::string empty = "";
     EXPECT_EQ(StringUtils::RStrip(base),"hello");
     EXPECT_EQ(StringUtils::RStrip(empty),empty);
 }
 
-TEST(StringUtilsTest, Strip){ //done
+// Test for Strip function of StringUtils
+TEST(StringUtilsTest, Strip){
     std::string base = " hello   ";
     std::string empty = "";
 
@@ -63,7 +71,8 @@ TEST(StringUtilsTest, Strip){ //done
     EXPECT_EQ(StringUtils::Strip(empty),empty);
 }
 
-TEST(StringUtilsTest, Center){ //done
+// Test for Center function of StringUtils
+TEST(StringUtilsTest, Center){ 
     std::string base = "hello";
     std::string empty = "";
 
@@ -75,7 +84,8 @@ TEST(StringUtilsTest, Center){ //done
      
 }
 
-TEST(StringUtilsTest, LJust){ //done
+// Test for LJust function of StringUtils
+TEST(StringUtilsTest, LJust){ 
     std::string base = "hello";
     std::string empty = "";
 
@@ -87,7 +97,8 @@ TEST(StringUtilsTest, LJust){ //done
 
 }
 
-TEST(StringUtilsTest, RJust){ //done
+// Test for RJust function of StringUtils
+TEST(StringUtilsTest, RJust){ 
     std::string base = "hello";
     std::string empty = "";
 
@@ -98,7 +109,8 @@ TEST(StringUtilsTest, RJust){ //done
     
 }
 
-TEST(StringUtilsTest, Replace){ //done
+// Test for Replace function of StringUtils
+TEST(StringUtilsTest, Replace){ 
     std::string base = "hello";
     std::string empty = "";
 
@@ -108,7 +120,8 @@ TEST(StringUtilsTest, Replace){ //done
 
 }
 
-TEST(StringUtilsTest, Split){ //done!!
+// Test for Split function of StringUtils
+TEST(StringUtilsTest, Split){ 
     std::string base = "hello, this is, a test, case";
 
 
@@ -120,14 +133,16 @@ TEST(StringUtilsTest, Split){ //done!!
     
 }
 
-TEST(StringUtilsTest, Join){ //done
+// Test for Join function of StringUtils
+TEST(StringUtilsTest, Join){ 
     std::vector< std::string > base = {"hello", "this is", "an awesome", "test case"};
     std::vector< std::string > empty = {};
     EXPECT_EQ(StringUtils::Join(" ",base),"hello this is an awesome test case");
     
 }
 
-TEST(StringUtilsTest, ExpandTabs){ //done
+// Test for ExpandTabs function of StringUtils
+TEST(StringUtilsTest, ExpandTabs){ 
     std::string base = "h\te\tl\tl\to";
     std::string base2 = "hello";
     std::string empty = "";
@@ -139,6 +154,7 @@ TEST(StringUtilsTest, ExpandTabs){ //done
 
 }
 
+// Test for EditDistance function of StringUtils
 TEST(StringUtilsTest, EditDistance){
     std::string base = "hello";
     std::string base2 = "Greetings";

@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "StringDataSink.h"
 
+// Test for StringDataSink when it's empty
 TEST(StringDataSink, EmptyTest){
     CStringDataSink EmptySink;
     
@@ -8,6 +9,7 @@ TEST(StringDataSink, EmptyTest){
     EXPECT_EQ(EmptySink.String(),"");
 }
 
+// Test for Put() function of StringDataSink
 TEST(StringDataSink, PutTest){
     CStringDataSink Sink;
     
@@ -20,6 +22,7 @@ TEST(StringDataSink, PutTest){
     EXPECT_EQ(Sink.String(),"Hello");
 }
 
+// Test for Write() function of StringDataSink
 TEST(StringDataSink, WriteTest){
     std::vector<char> TempVector1 = {'H','e','l','l','o'};
     std::vector<char> TempVector2 = {' ','W','o','r','l','d'};

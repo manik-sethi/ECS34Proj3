@@ -27,16 +27,16 @@ TEST(XMLReaderTest3, XMLWithCDATA) {
     CXMLReader Reader(InputStream);
     SXMLEntity E;
 
-    // Expect a start element
+
     EXPECT_TRUE(Reader.ReadEntity(E));
     EXPECT_EQ(E.DType, SXMLEntity::EType::StartElement);
 
-    // Expect character data
+
     EXPECT_TRUE(Reader.ReadEntity(E, true));
     EXPECT_EQ(E.DType, SXMLEntity::EType::CharData);
     EXPECT_EQ(E.DNameData, "<p>Hello World</p>");
 
-    // Expect an end element
+
     EXPECT_TRUE(Reader.ReadEntity(E));
     EXPECT_EQ(E.DType, SXMLEntity::EType::EndElement);
 }
@@ -48,7 +48,6 @@ TEST(XMLWriterTest2, XMLWriterExample) {
     auto OutputStream = std::make_shared<CStringDataSink>();
     CXMLWriter Writer(OutputStream);
 
-    // Write the example XML
     Writer.WriteEntity({SXMLEntity::EType::StartElement, "example", {{"attr", "Hello World"}}});
     Writer.WriteEntity({SXMLEntity::EType::EndElement, "example", {}});
     Writer.Flush();
@@ -61,7 +60,7 @@ TEST(XMLWriterTest3, XMLWriterExample) {
     auto OutputStream = std::make_shared<CStringDataSink>();
     CXMLWriter Writer(OutputStream);
 
-    // Write the example XML
+
     Writer.WriteEntity({SXMLEntity::EType::StartElement, "three", {{"two", "Hello "}}});
     Writer.WriteEntity({SXMLEntity::EType::EndElement, "three", {}});
     Writer.Flush();

@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include "StringDataSource.h"
 
+
+// Test for End() function of StringDataSource
 TEST(StringDataSource, EndTest){
     CStringDataSource EmptySource("");
     CStringDataSource BaseSource("Hello");
@@ -9,6 +11,7 @@ TEST(StringDataSource, EndTest){
     EXPECT_FALSE(BaseSource.End());
 }
 
+// Test for Peek() function of StringDataSource
 TEST(StringDataSource, PeekTest){
     CStringDataSource EmptySource("");
     CStringDataSource Source1("Hello");
@@ -29,6 +32,7 @@ TEST(StringDataSource, PeekTest){
     EXPECT_EQ(TempCh,'B');
 }
 
+// Test for Get() function of StringDataSource
 TEST(StringDataSource, GetTest){
     CStringDataSource EmptySource("");
     CStringDataSource Source1("Hello");
@@ -55,6 +59,7 @@ TEST(StringDataSource, GetTest){
     EXPECT_EQ(TempCh,'y');
 }
 
+// Test for Read() function of StringDataSource
 TEST(StringDataSource, ReadTest){
     CStringDataSource EmptySource("");
     CStringDataSource Source1("Hello");

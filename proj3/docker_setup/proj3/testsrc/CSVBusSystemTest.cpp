@@ -26,7 +26,7 @@ TEST(CSVBusSystem, SingleStopPropertiesTest) {
     CCSVBusSystem BusSystem(CSVReaderStops, CSVReaderRoutes);
 
     auto stop = BusSystem.StopByIndex(0);
-    ASSERT_NE(stop, nullptr); // Ensure stop is not null
+    ASSERT_NE(stop, nullptr); 
 
     EXPECT_EQ(stop->ID(), 1);
     EXPECT_EQ(stop->NodeID(), 1001);
@@ -40,14 +40,13 @@ TEST(CSVBusSystem, MultipleStopsPropertiesTest) {
     auto CSVReaderRoutes = std::make_shared<CDSVReader>(InStreamRoutes,',');
     CCSVBusSystem BusSystem(CSVReaderStops, CSVReaderRoutes);
 
-    EXPECT_EQ(BusSystem.StopCount(), 3); // We expect 3 stops in this case
-    EXPECT_EQ(BusSystem.RouteCount(), 0); // No routes yet
+    EXPECT_EQ(BusSystem.StopCount(), 3); 
+    EXPECT_EQ(BusSystem.RouteCount(), 0);
 
     auto stop1 = BusSystem.StopByIndex(0);
     auto stop2 = BusSystem.StopByIndex(1);
     auto stop3 = BusSystem.StopByIndex(2);
 
-    // Check properties of each stop
     ASSERT_NE(stop1, nullptr);
     EXPECT_EQ(stop1->ID(), 1);
     EXPECT_EQ(stop1->NodeID(), 1001);
