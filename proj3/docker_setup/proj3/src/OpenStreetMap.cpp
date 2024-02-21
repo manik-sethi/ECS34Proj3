@@ -62,16 +62,26 @@ struct COpenStreetMap::SImplementation {
     std::unordered_map<CStreetMap::TNodeID, std::shared_ptr<CStreetMap::SNode>> NodesById;
     std::vector<std::shared_ptr<CStreetMap::SWay>> Ways;
     std::unordered_map<CStreetMap::TWayID, std::shared_ptr<CStreetMap::SWay>> WaysById;
+    std::shared_ptr<CXMLReader> XMLReader;
 };
 
+
 COpenStreetMap::COpenStreetMap(std::shared_ptr<CXMLReader> src) : DImplementation(std::make_unique<SImplementation>()) {
+    // Ensure src is not null
+    if (!src) {
+        throw std::invalid_argument("Null XML reader provided");
+    }
+
+    // Initialize XML reader
+    DImplementation->XMLReader = src;
+
     // Parse the XML data and populate Nodes and Ways
     SXMLEntity Entity;
     std::string currentNodeName;
     std::vector<std::string> currentAttributes;
 
     // Loop to read XML entities until end of data source
-    while (src->ReadEntity(Entity, false)) {
+    while (DImplementation->XMLReader->ReadEntity(Entity, false)) {
         // Check the entity type
         if (Entity.DType == SXMLEntity::EType::StartElement) {
             // Start element encountered
@@ -118,6 +128,7 @@ COpenStreetMap::COpenStreetMap(std::shared_ptr<CXMLReader> src) : DImplementatio
         }
     }
 }
+
 
 COpenStreetMap::~COpenStreetMap() = default;
 
