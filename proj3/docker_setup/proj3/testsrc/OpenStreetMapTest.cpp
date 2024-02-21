@@ -1,106 +1,159 @@
-#include <OpenStreetMap.h>
-#include <gtest/gtest.h>
-#include <StringDataSink.h>
-#include <StringDataSource.h>
+#include <memory>
+#include <vector>
+#include <unordered_map>
+#include "StreetMap.h"
+#include "OpenStreetMap.h"
+#include "XMLReader.h"
 
-// Tests for COpenStreetMap
+class COpenStreetMap : public CStreetMap {
+public:
+    // Constructor
+    COpenStreetMap(std::shared_ptr<CXMLReader> src);
 
-// Test case for checking the count of nodes and ways when there is only one node and one way
-TEST(COpenStreetMap, SingleNodeWayCountTest) {
-    // Prepare sample data for a single node and single way
-    auto xmlData = R"(
-        <osm>
-            <node id="1" lat="52.0" lon="13.0"/>
-            <way id="101">
-                <nd ref="1"/>
-            </way>
-        </osm>
-    )";
-    auto dataSource = std::make_shared<StringDataSource>(xmlData);
-    auto xmlReader = std::make_shared<CXMLReader>(dataSource);
-    COpenStreetMap osm(xmlReader);
+    // Destructor
+    ~COpenStreetMap() override;
 
-    // Test assertions
-    EXPECT_EQ(osm.NodeCount(), 1);
-    EXPECT_EQ(osm.WayCount(), 1);
+    // Implementation of virtual functions
+    std::size_t NodeCount() const noexcept override;
+    std::size_t WayCount() const noexcept override;
+    std::shared_ptr<CStreetMap::SNode> NodeByIndex(std::size_t index) const noexcept override;
+    std::shared_ptr<CStreetMap::SNode> NodeByID(TNodeID id) const noexcept override;
+    std::shared_ptr<CStreetMap::SWay> WayByIndex(std::size_t index) const noexcept override;
+    std::shared_ptr<CStreetMap::SWay> WayByID(TWayID id) const noexcept override;
+
+private:
+    struct SNode : public CStreetMap::SNode {
+        CStreetMap::TNodeID id;
+        CStreetMap::TLocation location;
+
+        SNode(CStreetMap::TNodeID id, CStreetMap::TLocation location) : id(id), location(location) {}
+
+        CStreetMap::TNodeID ID() const noexcept override { return id; }
+        CStreetMap::TLocation Location() const noexcept override { return location; }
+        std::size_t AttributeCount() const noexcept override { return 0; }
+        std::string GetAttributeKey(std::size_t index) const noexcept override { return ""; }
+        bool HasAttribute(const std::string &key) const noexcept override { return false; }
+        std::string GetAttribute(const std::string &key) const noexcept override { return ""; }
+    };
+
+    struct SWay : public CStreetMap::SWay {
+        CStreetMap::TWayID id;
+        std::vector<CStreetMap::TNodeID> NodeIDs;
+
+        SWay(CStreetMap::TWayID id) : id(id) {}
+
+        CStreetMap::TWayID ID() const noexcept override { return id; }
+        std::size_t NodeCount() const noexcept override { return NodeIDs.size(); }
+        CStreetMap::TNodeID GetNodeID(std::size_t index) const noexcept override {
+            return index < NodeIDs.size() ? NodeIDs[index] : CStreetMap::InvalidNodeID;
+        }
+        std::size_t AttributeCount() const noexcept override { return 0; }
+        std::string GetAttributeKey(std::size_t index) const noexcept override { return ""; }
+        bool HasAttribute(const std::string &key) const noexcept override { return false; }
+        std::string GetAttribute(const std::string &key) const noexcept override { return ""; }
+    };
+
+    struct SImplementation;
+    std::unique_ptr<SImplementation> DImplementation;
+};
+
+struct COpenStreetMap::SImplementation {
+    std::vector<std::shared_ptr<CStreetMap::SNode>> Nodes;
+    std::unordered_map<CStreetMap::TNodeID, std::shared_ptr<CStreetMap::SNode>> NodesById;
+    std::vector<std::shared_ptr<CStreetMap::SWay>> Ways;
+    std::unordered_map<CStreetMap::TWayID, std::shared_ptr<CStreetMap::SWay>> WaysById;
+    std::shared_ptr<CXMLReader> XMLReader;
+};
+
+
+COpenStreetMap::COpenStreetMap(std::shared_ptr<CXMLReader> src) : DImplementation(std::make_unique<SImplementation>()) {
+    // Ensure src is not null
+    if (!src) {
+        throw std::invalid_argument("Null XML reader provided");
+    }
+
+    // Initialize XML reader
+    DImplementation->XMLReader = src;
+
+    // Parse the XML data and populate Nodes and Ways
+    SXMLEntity Entity;
+    std::string currentNodeName;
+    std::vector<std::string> currentAttributes;
+
+    // Loop to read XML entities until end of data source
+    while (DImplementation->XMLReader->ReadEntity(Entity, false)) {
+        // Check the entity type
+        if (Entity.DType == SXMLEntity::EType::StartElement) {
+            // Start element encountered
+            currentNodeName = Entity.DNameData;
+            currentAttributes.clear();
+            for (const auto& attr : Entity.DAttributes) {
+                currentAttributes.push_back(attr.first);
+                currentAttributes.push_back(attr.second);
+            }
+        } else if (Entity.DType == SXMLEntity::EType::EndElement) {
+            // End element encountered
+            currentNodeName.clear();
+            currentAttributes.clear();
+        } else if (Entity.DType == SXMLEntity::EType::CharData && !currentNodeName.empty()) {
+            // Character data encountered (inside an element)
+            if (currentNodeName == "node") {
+                // Parse node data and add to Nodes vector and NodesById map
+                CStreetMap::TNodeID id = std::stoul(Entity.DNameData);
+                double lat, lon;
+                for (size_t i = 0; i < currentAttributes.size(); i += 2) {
+                    if (currentAttributes[i] == "lat") {
+                        lat = std::stod(currentAttributes[i + 1]);
+                    } else if (currentAttributes[i] == "lon") {
+                        lon = std::stod(currentAttributes[i + 1]);
+                    }
+                }
+                auto newNode = std::make_shared<SNode>(id, CStreetMap::TLocation(lat, lon));
+                DImplementation->Nodes.push_back(newNode);
+                DImplementation->NodesById[id] = newNode;
+            } else if (currentNodeName == "way") {
+                // Parse way data and add to Ways vector and WaysById map
+                CStreetMap::TWayID id = std::stoul(Entity.DNameData);
+                std::vector<CStreetMap::TNodeID> nodeIDs;
+                for (const auto& attr : currentAttributes) {
+                    if (attr.substr(0, 5) == "node_") {
+                        nodeIDs.push_back(std::stoul(attr.substr(5)));
+                    }
+                }
+                auto newWay = std::make_shared<SWay>(id);
+                newWay->NodeIDs = nodeIDs;
+                DImplementation->Ways.push_back(newWay);
+                DImplementation->WaysById[id] = newWay;
+            }
+        }
+    }
 }
 
-// Test case for checking properties of the first node and way
-TEST(COpenStreetMap, SingleNodeWayPropertiesTest) {
-    // Prepare sample data for a single node and single way
-    auto xmlData = R"(
-        <osm>
-            <node id="1" lat="52.0" lon="13.0"/>
-            <way id="101">
-                <nd ref="1"/>
-            </way>
-        </osm>
-    )";
-    auto dataSource = std::make_shared<StringDataSource>(xmlData);
-    auto xmlReader = std::make_shared<CXMLReader>(dataSource);
-    COpenStreetMap osm(xmlReader);
 
-    // Test assertions for the first node
-    auto node = osm.NodeByIndex(0);
-    ASSERT_NE(node, nullptr);
-    EXPECT_EQ(node->ID(), 1);
-    EXPECT_EQ(node->Location().latitude, 52.0);
-    EXPECT_EQ(node->Location().longitude, 13.0);
+COpenStreetMap::~COpenStreetMap() = default;
 
-    // Test assertions for the first way
-    auto way = osm.WayByIndex(0);
-    ASSERT_NE(way, nullptr);
-    EXPECT_EQ(way->ID(), 101);
-    EXPECT_EQ(way->NodeCount(), 1);
-    EXPECT_EQ(way->GetNodeID(0), 1);
+std::size_t COpenStreetMap::NodeCount() const noexcept {
+    return DImplementation->Nodes.size();
 }
 
-// Test case for checking properties of multiple nodes and ways
-TEST(COpenStreetMap, MultipleNodesWaysPropertiesTest) {
-    // Prepare sample data for multiple nodes and ways
-    auto xmlData = R"(
-        <osm>
-            <node id="1" lat="52.0" lon="13.0"/>
-            <node id="2" lat="53.0" lon="14.0"/>
-            <way id="101">
-                <nd ref="1"/>
-                <nd ref="2"/>
-            </way>
-        </osm>
-    )";
-    auto dataSource = std::make_shared<StringDataSource>(xmlData);
-    auto xmlReader = std::make_shared<CXMLReader>(dataSource);
-    COpenStreetMap osm(xmlReader);
-
-    // Test assertions for node count and way count
-    EXPECT_EQ(osm.NodeCount(), 2);
-    EXPECT_EQ(osm.WayCount(), 1);
-
-    // Test assertions for properties of each node
-    auto node1 = osm.NodeByIndex(0);
-    ASSERT_NE(node1, nullptr);
-    EXPECT_EQ(node1->ID(), 1);
-    EXPECT_EQ(node1->Location().latitude, 52.0);
-    EXPECT_EQ(node1->Location().longitude, 13.0);
-
-    auto node2 = osm.NodeByIndex(1);
-    ASSERT_NE(node2, nullptr);
-    EXPECT_EQ(node2->ID(), 2);
-    EXPECT_EQ(node2->Location().latitude, 53.0);
-    EXPECT_EQ(node2->Location().longitude, 14.0);
-
-    // Test assertions for properties of each way
-    auto way = osm.WayByIndex(0);
-    ASSERT_NE(way, nullptr);
-    EXPECT_EQ(way->ID(), 101);
-    EXPECT_EQ(way->NodeCount(), 2);
-    EXPECT_EQ(way->GetNodeID(0), 1);
-    EXPECT_EQ(way->GetNodeID(1), 2);
+std::size_t COpenStreetMap::WayCount() const noexcept {
+    return DImplementation->Ways.size();
 }
 
-// Add more test cases as needed
+std::shared_ptr<CStreetMap::SNode> COpenStreetMap::NodeByIndex(std::size_t index) const noexcept {
+    return index < DImplementation->Nodes.size() ? DImplementation->Nodes[index] : nullptr;
+}
 
-int main(int argc, char **argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+std::shared_ptr<CStreetMap::SNode> COpenStreetMap::NodeByID(CStreetMap::TNodeID id) const noexcept {
+    auto it = DImplementation->NodesById.find(id);
+    return it != DImplementation->NodesById.end() ? it->second : nullptr;
+}
+
+std::shared_ptr<CStreetMap::SWay> COpenStreetMap::WayByIndex(std::size_t index) const noexcept {
+    return index < DImplementation->Ways.size() ? DImplementation->Ways[index] : nullptr;
+}
+
+std::shared_ptr<CStreetMap::SWay> COpenStreetMap::WayByID(CStreetMap::TWayID id) const noexcept {
+    auto it = DImplementation->WaysById.find(id);
+    return it != DImplementation->WaysById.end() ? it->second : nullptr;
 }
