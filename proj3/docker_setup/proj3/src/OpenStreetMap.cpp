@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include "OpenStreetMap.h"
 #include "XMLReader.h"
+#include "StreetMap.h"
+
 
 using namespace std;
 
@@ -20,6 +22,7 @@ struct COpenStreetMap::SNode : public CStreetMap::SNode {
     std::string GetAttributeKey(std::size_t index) const noexcept override { return ""; }
     bool HasAttribute(const std::string &key) const noexcept override { return false; }
     std::string GetAttribute(const std::string &key) const noexcept override { return ""; }
+
 };
 
 // Define the struct SWay
@@ -96,7 +99,7 @@ COpenStreetMap::COpenStreetMap(std::shared_ptr<CXMLReader> src) : DImplementatio
                     }
                 }
                 auto newWay = std::make_shared<SWay>(id);
-                newWay->NodeIDs = nodeIDs;
+
                 DImplementation->Ways.push_back(newWay);
                 DImplementation->WaysById[id] = newWay;
             }
@@ -118,23 +121,23 @@ std::size_t COpenStreetMap::WayCount() const noexcept {
 }
 
 // Returns the SNode associated with index, returns nullptr if index is larger than or equal to NodeCount()
-std::shared_ptr<COpenStreetMap::SNode> COpenStreetMap::NodeByIndex(std::size_t index) const noexcept {
+std::shared_ptr<CStreetMap::SNode> COpenStreetMap::NodeByIndex(std::size_t index) const noexcept {
     return index < DImplementation->Nodes.size() ? DImplementation->Nodes[index] : nullptr;
 }
 
 // Returns the SNode with the id of id, returns nullptr if doesn't exist
-std::shared_ptr<COpenStreetMap::SNode> COpenStreetMap::NodeByID(TNodeID id) const noexcept {
+std::shared_ptr<CStreetMap::SNode> COpenStreetMap::NodeByID(TNodeID id) const noexcept {
     auto it = DImplementation->NodesById.find(id);
     return it != DImplementation->NodesById.end() ? it->second : nullptr;
 }
 
 // Returns the SWay associated with index, returns nullptr if index is larger than or equal to WayCount()
-std::shared_ptr<COpenStreetMap::SWay> COpenStreetMap::WayByIndex(std::size_t index) const noexcept {
+std::shared_ptr<CStreetMap::SWay> COpenStreetMap::WayByIndex(std::size_t index) const noexcept {
     return index < DImplementation->Ways.size() ? DImplementation->Ways[index] : nullptr;
 }
 
 // Returns the SWay with the id of id, returns nullptr if doesn't exist
-std::shared_ptr<COpenStreetMap::SWay> COpenStreetMap::WayByID(TWayID id) const noexcept {
+std::shared_ptr<CStreetMap::SWay> COpenStreetMap::WayByID(TWayID id) const noexcept {
     auto it = DImplementation->WaysById.find(id);
     return it != DImplementation->WaysById.end() ? it->second : nullptr;
 }
