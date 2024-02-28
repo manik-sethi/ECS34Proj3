@@ -1,7 +1,7 @@
-#include <OpenStreetMap.h>
+#include "../include/StringDataSource.h"
+#include "../include/OpenStreetMap.h"
 #include <gtest/gtest.h>
-#include <StringDataSink.h>
-#include <StringDataSource.h>
+#include "../include/StringDataSink.h"
 
 // Tests for COpenStreetMap
 
@@ -16,7 +16,7 @@ TEST(COpenStreetMap, SingleNodeWayCountTest) {
             </way>
         </osm>
     )";
-    auto dataSource = std::make_shared<StringDataSource>(xmlData);
+    auto dataSource = std::make_shared<CStringDataSource>(xmlData);
     auto xmlReader = std::make_shared<CXMLReader>(dataSource);
     COpenStreetMap osm(xmlReader);
 
@@ -36,7 +36,7 @@ TEST(COpenStreetMap, SingleNodeWayPropertiesTest) {
             </way>
         </osm>
     )";
-    auto dataSource = std::make_shared<StringDataSource>(xmlData);
+    auto dataSource = std::make_shared<CStringDataSource>(xmlData);
     auto xmlReader = std::make_shared<CXMLReader>(dataSource);
     COpenStreetMap osm(xmlReader);
 
@@ -68,7 +68,7 @@ TEST(COpenStreetMap, MultipleNodesWaysPropertiesTest) {
             </way>
         </osm>
     )";
-    auto dataSource = std::make_shared<StringDataSource>(xmlData);
+    auto dataSource = std::make_shared<CStringDataSource>(xmlData);
     auto xmlReader = std::make_shared<CXMLReader>(dataSource);
     COpenStreetMap osm(xmlReader);
 
