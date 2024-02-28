@@ -1,7 +1,7 @@
-#include "../include/StringDataSource.h"
-#include "../include/OpenStreetMap.h"
+#include "StringDataSource.h"
+#include "OpenStreetMap.h"
 #include <gtest/gtest.h>
-#include "../include/StringDataSink.h"
+#include "StringDataSink.h"
 
 // Tests for COpenStreetMap
 
@@ -41,13 +41,14 @@ TEST(COpenStreetMap, SingleNodeWayPropertiesTest) {
     COpenStreetMap osm(xmlReader);
 
     // Test assertions for the first node
+   // Test assertions for properties of the first node
     auto node = osm.NodeByIndex(0);
     ASSERT_NE(node, nullptr);
     EXPECT_EQ(node->ID(), 1);
-    EXPECT_EQ(node->Location().latitude, 52.0);
-    EXPECT_EQ(node->Location().longitude, 13.0);
+    EXPECT_EQ(node->Location().first, 52.0); // Access the latitude using .first
+    EXPECT_EQ(node->Location().second, 13.0); // Access the longitude using .second
 
-    // Test assertions for the first way
+    // Test assertions for properties of each way
     auto way = osm.WayByIndex(0);
     ASSERT_NE(way, nullptr);
     EXPECT_EQ(way->ID(), 101);
@@ -80,14 +81,14 @@ TEST(COpenStreetMap, MultipleNodesWaysPropertiesTest) {
     auto node1 = osm.NodeByIndex(0);
     ASSERT_NE(node1, nullptr);
     EXPECT_EQ(node1->ID(), 1);
-    EXPECT_EQ(node1->Location().latitude, 52.0);
-    EXPECT_EQ(node1->Location().longitude, 13.0);
+    EXPECT_EQ(node1->Location().first, 52.0);
+    EXPECT_EQ(node1->Location().second, 13.0);
 
     auto node2 = osm.NodeByIndex(1);
     ASSERT_NE(node2, nullptr);
     EXPECT_EQ(node2->ID(), 2);
-    EXPECT_EQ(node2->Location().latitude, 53.0);
-    EXPECT_EQ(node2->Location().longitude, 14.0);
+    EXPECT_EQ(node2->Location().first, 53.0);
+    EXPECT_EQ(node2->Location().second, 14.0);
 
     // Test assertions for properties of each way
     auto way = osm.WayByIndex(0);
