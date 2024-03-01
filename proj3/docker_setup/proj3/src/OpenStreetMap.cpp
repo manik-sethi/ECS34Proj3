@@ -5,7 +5,7 @@
 #include "OpenStreetMap.h"
 #include "XMLReader.h"
 #include "StreetMap.h"
-
+#include <iostream>
 
 using namespace std;
 
@@ -22,7 +22,6 @@ struct COpenStreetMap::SNode : public CStreetMap::SNode {
     std::string GetAttributeKey(std::size_t index) const noexcept override { return ""; }
     bool HasAttribute(const std::string &key) const noexcept override { return false; }
     std::string GetAttribute(const std::string &key) const noexcept override { return ""; }
-
 };
 
 // Define the struct SWay
@@ -77,31 +76,31 @@ COpenStreetMap::COpenStreetMap(std::shared_ptr<CXMLReader> src) : DImplementatio
             // Character data encountered (inside an element)
             if (currentNodeName == "node") {
                 // Parse node data and add to Nodes vector and NodesById map
-                TNodeID id = std::stoul(Entity.DNameData);
-                double lat, lon;
-                for (size_t i = 0; i < currentAttributes.size(); i += 2) {
-                    if (currentAttributes[i] == "lat") {
-                        lat = std::stod(currentAttributes[i + 1]);
-                    } else if (currentAttributes[i] == "lon") {
-                        lon = std::stod(currentAttributes[i + 1]);
-                    }
+                try {
+                    TNodeID id = std::stoull(currentAttributes[1]);
+                    double lat = std::stod(currentAttributes[3]);
+                    double lon = std::stod(currentAttributes[5]);
+                    auto newNode = std::make_shared<SNode>(id, TLocation(lat, lon));
+                    DImplementation->Nodes.push_back(newNode);
+                    DImplementation->NodesById[id] = newNode;
+                } catch (const std::exception& e) {
+                    std::cerr << "Error parsing node: " << e.what() << std::endl;
                 }
-                auto newNode = std::make_shared<SNode>(id, TLocation(lat, lon));
-                DImplementation->Nodes.push_back(newNode);
-                DImplementation->NodesById[id] = newNode;
             } else if (currentNodeName == "way") {
                 // Parse way data and add to Ways vector and WaysById map
-                TWayID id = std::stoul(Entity.DNameData);
-                std::vector<TNodeID> nodeIDs;
-                for (const auto& attr : currentAttributes) {
-                    if (attr.substr(0, 5) == "node_") {
-                        nodeIDs.push_back(std::stoul(attr.substr(5)));
+                try {
+                    TWayID id = std::stoull(currentAttributes[1]);
+                    auto newWay = std::make_shared<SWay>(id);
+                    for (size_t i = 0; i < currentAttributes.size(); ++i) {
+                        if (currentAttributes[i] == "ref") {
+                            newWay->NodeIDs.push_back(std::stoull(currentAttributes[i + 1]));
+                        }
                     }
+                    DImplementation->Ways.push_back(newWay);
+                    DImplementation->WaysById[id] = newWay;
+                } catch (const std::exception& e) {
+                    std::cerr << "Error parsing way: " << e.what() << std::endl;
                 }
-                auto newWay = std::make_shared<SWay>(id);
-
-                DImplementation->Ways.push_back(newWay);
-                DImplementation->WaysById[id] = newWay;
             }
         }
     }
@@ -127,8 +126,8 @@ std::shared_ptr<CStreetMap::SNode> COpenStreetMap::NodeByIndex(std::size_t index
 
 // Returns the SNode with the id of id, returns nullptr if doesn't exist
 std::shared_ptr<CStreetMap::SNode> COpenStreetMap::NodeByID(TNodeID id) const noexcept {
-    auto it = DImplementation->NodesById.find(id);
-    return it != DImplementation->NodesById.end() ? it->second : nullptr;
+    auto iter = DImplementation->NodesById.find(id);
+    return iter != DImplementation->NodesById.end() ? iter->second : nullptr;
 }
 
 // Returns the SWay associated with index, returns nullptr if index is larger than or equal to WayCount()
@@ -138,6 +137,6 @@ std::shared_ptr<CStreetMap::SWay> COpenStreetMap::WayByIndex(std::size_t index) 
 
 // Returns the SWay with the id of id, returns nullptr if doesn't exist
 std::shared_ptr<CStreetMap::SWay> COpenStreetMap::WayByID(TWayID id) const noexcept {
-    auto it = DImplementation->WaysById.find(id);
-    return it != DImplementation->WaysById.end() ? it->second : nullptr;
+    auto iter = DImplementation->WaysById.find(id);
+    return iter != DImplementation->WaysById.end() ? iter->second : nullptr;
 }
